@@ -11,6 +11,7 @@ import directoryInfo from "../../utils/directoryInfo";
 import getTurboUpgradeCommand from "./steps/getTurboUpgradeCommand";
 import Runner from "../../runner/Runner";
 import type { MigrateCommandArgument, MigrateCommandOptions } from "./types";
+import looksLikeRepo from "../../utils/looksLikeRepo";
 
 function endMigration({
   message,
@@ -51,7 +52,7 @@ export default async function migrate(
 ) {
   // check git status
   if (!options.dry) {
-    checkGitStatus(options.force);
+    checkGitStatus({ directory, force: options.force });
   }
 
   const answers = await inquirer.prompt<{
@@ -60,7 +61,7 @@ export default async function migrate(
     {
       type: "input",
       name: "directoryInput",
-      message: "Where is the root of the repo where the transform should run?",
+      message: "Where is the root of the repo to migrate?",
       when: !directory,
       default: ".",
       validate: (directory: string) => {
@@ -83,6 +84,15 @@ export default async function migrate(
     return endMigration({
       success: false,
       message: `Directory ${chalk.dim(`(${root})`)} does not exist`,
+    });
+  }
+
+  if (!looksLikeRepo({ directory: root })) {
+    return endMigration({
+      success: false,
+      message: `Directory (${chalk.dim(
+        root
+      )}) does not appear to be a repository`,
     });
   }
 
@@ -169,7 +179,12 @@ export default async function migrate(
 
   if (options.install) {
     if (options.dry) {
-      console.log(`Upgrading turbo with ${chalk.bold(upgradeCommand)} ${chalk.dim('(dry run)')}`, os.EOL);
+      console.log(
+        `Upgrading turbo with ${chalk.bold(upgradeCommand)} ${chalk.dim(
+          "(dry run)"
+        )}`,
+        os.EOL
+      );
     } else {
       console.log(`Upgrading turbo with ${chalk.bold(upgradeCommand)}`, os.EOL);
       execSync(upgradeCommand, { cwd: selectedDirectory });

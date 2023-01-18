@@ -23,9 +23,12 @@ codemodCli
   .argument("[path]", "Directory where the transforms should be applied")
   .option(
     "--from <version>",
-    "Specify the version to migrate from (default: current version)",
+    "Specify the version to migrate from (default: current version)"
   )
-  .option("--to <version>", "Specify the version to migrate to (default: latest)")
+  .option(
+    "--to <version>",
+    "Specify the version to migrate to (default: latest)"
+  )
   .option("--install", "Install new version of turbo after migration", true)
   .option(
     "--force",

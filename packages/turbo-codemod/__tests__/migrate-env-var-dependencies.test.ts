@@ -1,7 +1,6 @@
 import merge from "deepmerge";
 import {
   hasLegacyEnvVarDependencies,
-  migrateDependencies,
   migratePipeline,
   migrateConfig,
   transformer,

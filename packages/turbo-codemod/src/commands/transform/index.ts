@@ -27,7 +27,7 @@ export default async function transform(
 
   // check git status
   if (!options.dry) {
-    checkGitStatus(options.force);
+    checkGitStatus({ directory, force: options.force });
   }
 
   const answers = await inquirer.prompt<{

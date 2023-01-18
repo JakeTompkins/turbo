@@ -14,7 +14,7 @@ async function getLatestVersion({
   try {
     const result = await axios.get(`${REGISTRY}/turbo`);
     const versions = result.data["dist-tags"];
-    return versions.latest as string
+    return versions.latest as string;
   } catch (err) {
     return undefined;
   }

@@ -6,7 +6,7 @@ import * as checkGitStatus from "../src/utils/checkGitStatus";
 import * as getCurrentVersion from "../src/commands/migrate/steps/getCurrentVersion";
 import * as getLatestVersion from "../src/commands/migrate/steps/getLatestVersion";
 import * as getTurboUpgradeCommand from "../src/commands/migrate/steps/getTurboUpgradeCommand";
-import * as workspaceImplementation from "../src/utils/getWorkspaceImplementation";
+import * as workspaceImplementation from "../src/utils/getPackageManager";
 import * as getPackageManagerVersion from "../src/utils/getPackageManagerVersion";
 
 describe("migrate", () => {
@@ -288,8 +288,8 @@ describe("migrate", () => {
       dry: false,
       print: false,
       install: true,
-      from: '1.3.0',
-      to: '1.3.1'
+      from: "1.3.0",
+      to: "1.3.1",
     });
 
     // verify mocks were called
