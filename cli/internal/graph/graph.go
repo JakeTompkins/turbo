@@ -33,6 +33,8 @@ type CompleteGraph struct {
 	RootNode string
 }
 
+// GetComposedPackageTaskVisitor is an alternative to GetPackageTaskVisitor that looks in the
+// task's workspace for a turbo.json, and follows `extends` keys to merge in other task definitions.
 func (g *CompleteGraph) GetComposedPackageTaskVisitor(ctx gocontext.Context, visitor func(ctx gocontext.Context, packageTask *nodes.PackageTask) error) func(taskID string) error {
 	return func(taskID string) error {
 		packageName, taskName := util.GetPackageTaskFromId(taskID)
