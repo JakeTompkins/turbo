@@ -163,7 +163,6 @@ func executeDryRun(ctx gocontext.Context, engine *core.Engine, g *graph.Complete
 	// Note: we do not currently attempt to parallelize the graph walking
 	// (as we do in real execution)
 	visitorFn := g.GetPackageTaskVisitor(ctx, dryRunExecFunc)
-
 	execOpts := core.EngineExecutionOptions{
 		Concurrency: 1,
 		Parallel:    false,
