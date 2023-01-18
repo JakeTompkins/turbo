@@ -2,4 +2,4 @@
 package features
 
 // FeatureComposableTurboJSON determines if this feature should be turned on
-const FeatureComposableTurboJSON = false
+const FeatureComposableTurboJSON = true
