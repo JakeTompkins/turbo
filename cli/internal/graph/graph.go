@@ -117,6 +117,36 @@ func getTaskFromPipeline(pipeline fs.Pipeline, taskID string, taskName string) (
 }
 
 func (g *CompleteGraph) getMergedTaskDefinition(pkg *fs.PackageJSON, taskID string, taskName string) (*fs.TaskDefinition, error) {
+	taskDefinitions, err := g.getTaskDefinitionChain(pkg, taskID, taskName)
+	if err != nil {
+		return nil, err
+	}
+
+	// reverse the array, because we want to start with the end of the chain.
+	for i, j := 0, len(taskDefinitions)-1; i < j; i, j = i+1, j-1 {
+		taskDefinitions[i], taskDefinitions[j] = taskDefinitions[j], taskDefinitions[i]
+	}
+
+	// Start with an empty definition
+	mergedTaskDefinition := &fs.TaskDefinition{}
+
+	// For each of the TaskDefinitions we know of, merge them in
+	for _, taskDef := range taskDefinitions {
+		mergedTaskDefinition.Outputs = taskDef.Outputs
+		mergedTaskDefinition.Outputs = taskDef.Outputs
+		mergedTaskDefinition.ShouldCache = taskDef.ShouldCache
+		mergedTaskDefinition.EnvVarDependencies = taskDef.EnvVarDependencies
+		mergedTaskDefinition.TopologicalDependencies = taskDef.TopologicalDependencies
+		mergedTaskDefinition.TaskDependencies = taskDef.TaskDependencies
+		mergedTaskDefinition.Inputs = taskDef.Inputs
+		mergedTaskDefinition.OutputMode = taskDef.OutputMode
+		mergedTaskDefinition.Persistent = taskDef.Persistent
+	}
+
+	return mergedTaskDefinition, nil
+}
+
+func (g *CompleteGraph) getTaskDefinitionChain(pkg *fs.PackageJSON, taskID string, taskName string) ([]fs.TaskDefinition, error) {
 	// Start a list of TaskDefinitions we've found for this TaskID
 	taskDefinitions := []fs.TaskDefinition{}
 
@@ -196,26 +226,5 @@ func (g *CompleteGraph) getMergedTaskDefinition(pkg *fs.PackageJSON, taskID stri
 		}
 	}
 
-	// reverse the array, because we want to start with the end of the chain.
-	for i, j := 0, len(taskDefinitions)-1; i < j; i, j = i+1, j-1 {
-		taskDefinitions[i], taskDefinitions[j] = taskDefinitions[j], taskDefinitions[i]
-	}
-
-	// Start with an empty definition
-	mergedTaskDefinition := &fs.TaskDefinition{}
-
-	// For each of the TaskDefinitions we know of, merge them in
-	for _, taskDef := range taskDefinitions {
-		mergedTaskDefinition.Outputs = taskDef.Outputs
-		mergedTaskDefinition.Outputs = taskDef.Outputs
-		mergedTaskDefinition.ShouldCache = taskDef.ShouldCache
-		mergedTaskDefinition.EnvVarDependencies = taskDef.EnvVarDependencies
-		mergedTaskDefinition.TopologicalDependencies = taskDef.TopologicalDependencies
-		mergedTaskDefinition.TaskDependencies = taskDef.TaskDependencies
-		mergedTaskDefinition.Inputs = taskDef.Inputs
-		mergedTaskDefinition.OutputMode = taskDef.OutputMode
-		mergedTaskDefinition.Persistent = taskDef.Persistent
-	}
-
-	return mergedTaskDefinition, nil
+	return taskDefinitions, nil
 }
