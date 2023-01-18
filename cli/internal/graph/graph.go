@@ -72,6 +72,7 @@ func (g *CompleteGraph) GetPackageTaskVisitor(ctx gocontext.Context, visitor fun
 		if !ok {
 			return fmt.Errorf("cannot find package %v for task %v", packageName, taskID)
 		}
+
 		packageTask := &nodes.PackageTask{
 			TaskID:      taskID,
 			Task:        taskName,
@@ -79,18 +80,9 @@ func (g *CompleteGraph) GetPackageTaskVisitor(ctx gocontext.Context, visitor fun
 			Pkg:         pkg,
 		}
 
-		// first check for package-tasks
-		taskDefinition, ok := g.Pipeline[fmt.Sprintf("%v", taskID)]
-
-		if !ok {
-			// then check for regular tasks
-			fallbackTaskDefinition, notcool := g.Pipeline[taskName]
-			// if neither, then bail
-			if !notcool {
-				return nil
-			}
-			// override if we need to...
-			taskDefinition = fallbackTaskDefinition
+		taskDefinition, err := getTaskFromPipeline(g.Pipeline, taskID, taskName)
+		if err != nil {
+			return err
 		}
 
 		packageTask.TaskDefinition = &taskDefinition
