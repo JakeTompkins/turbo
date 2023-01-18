@@ -85,13 +85,13 @@ func (g *CompleteGraph) GetPackageTaskVisitor(ctx gocontext.Context, visitor fun
 			return err
 		}
 
-		packageTask.TaskDefinition = &taskDefinition
+		packageTask.TaskDefinition = taskDefinition
 
 		return visitor(ctx, packageTask)
 	}
 }
 
-func getTaskFromPipeline(pipeline fs.Pipeline, taskID string, taskName string) (fs.TaskDefinition, error) {
+func getTaskFromPipeline(pipeline fs.Pipeline, taskID string, taskName string) (*fs.TaskDefinition, error) {
 	// first check for package-tasks
 	taskDefinition, ok := pipeline[taskID]
 	if !ok {
@@ -100,14 +100,14 @@ func getTaskFromPipeline(pipeline fs.Pipeline, taskID string, taskName string) (
 		// if neither, then bail
 		if !notcool {
 			// Return an empty fs.TaskDefinition
-			return fs.TaskDefinition{}, fmt.Errorf("No task defined in pipeline")
+			return nil, fmt.Errorf("No task defined in pipeline")
 		}
 
 		// override if we need to...
 		taskDefinition = fallbackTaskDefinition
 	}
 
-	return taskDefinition, nil
+	return &taskDefinition, nil
 }
 
 func (g *CompleteGraph) getMergedTaskDefinition(pkg *fs.PackageJSON, taskID string, taskName string) (*fs.TaskDefinition, error) {
@@ -153,7 +153,7 @@ func (g *CompleteGraph) getTaskDefinitionChain(pkg *fs.PackageJSON, taskID strin
 	// and carry on
 	if err != nil {
 		rootTaskDefinition, _ := getTaskFromPipeline(g.Pipeline, taskID, taskName)
-		taskDefinitions = append(taskDefinitions, rootTaskDefinition)
+		taskDefinitions = append(taskDefinitions, *rootTaskDefinition)
 	} else {
 		// For loop until we `break` manually.
 		// We will reassign `turboJSONPath` inside this loop, so that
@@ -173,7 +173,7 @@ func (g *CompleteGraph) getTaskDefinitionChain(pkg *fs.PackageJSON, taskID strin
 				// we don't need to do anything if no taskDefinition was found in this pipeline
 			} else {
 				// Add it into the taskDefinitions
-				taskDefinitions = append(taskDefinitions, taskDefinition)
+				taskDefinitions = append(taskDefinitions, *taskDefinition)
 
 				// If this turboJSON doesn't have an extends property, we can stop our for loop here.
 				if len(turboJSON.Extends) == 0 {
