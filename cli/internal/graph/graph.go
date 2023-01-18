@@ -33,10 +33,7 @@ type CompleteGraph struct {
 	RootNode string
 }
 
-// GetPackageTaskVisitor wraps a `visitor` function that is used for walking the TaskGraph
-// during execution (or dry-runs). The function returned here does not execute any tasks itself,
-// but it helps curry some data from the Complete Graph and pass it into the visitor function.
-func (g *CompleteGraph) GetPackageTaskVisitor(ctx gocontext.Context, visitor func(ctx gocontext.Context, packageTask *nodes.PackageTask) error) func(taskID string) error {
+func (g *CompleteGraph) GetComposedPackageTaskVisitor(ctx gocontext.Context, visitor func(ctx gocontext.Context, packageTask *nodes.PackageTask) error) func(taskID string) error {
 	return func(taskID string) error {
 		packageName, taskName := util.GetPackageTaskFromId(taskID)
 
@@ -59,7 +56,6 @@ func (g *CompleteGraph) GetPackageTaskVisitor(ctx gocontext.Context, visitor fun
 			rootTaskDefinition, _ := getTaskFromPipeline(g.Pipeline, taskID, taskName)
 			taskDefinitions = append(taskDefinitions, rootTaskDefinition)
 		} else {
-			//-------------------------
 			// For loop until we `break` manually.
 			// We will reassign `turboJSONPath` inside this loop, so that
 			// every time we iterate, we're starting from a new one.
@@ -157,6 +153,13 @@ func (g *CompleteGraph) GetPackageTaskVisitor(ctx gocontext.Context, visitor fun
 
 		return visitor(ctx, packageTask)
 	}
+}
+
+// GetPackageTaskVisitor wraps a `visitor` function that is used for walking the TaskGraph
+// during execution (or dry-runs). The function returned here does not execute any tasks itself,
+// but it helps curry some data from the Complete Graph and pass it into the visitor function.
+func (g *CompleteGraph) GetPackageTaskVisitor(ctx gocontext.Context, visitor func(ctx gocontext.Context, packageTask *nodes.PackageTask) error) func(taskID string) error {
+
 }
 
 func getTaskFromPipeline(pipeline fs.Pipeline, taskID string, taskName string) (fs.TaskDefinition, error) {
