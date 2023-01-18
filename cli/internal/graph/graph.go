@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/pyr-sh/dag"
+	"github.com/vercel/turbo/cli/internal/features"
 	"github.com/vercel/turbo/cli/internal/fs"
 	"github.com/vercel/turbo/cli/internal/nodes"
 	"github.com/vercel/turbo/cli/internal/turbopath"
@@ -33,34 +34,6 @@ type CompleteGraph struct {
 	RootNode string
 }
 
-// GetComposedPackageTaskVisitor is an alternative to GetPackageTaskVisitor that looks in the
-// task's workspace for a turbo.json, and follows `extends` keys to merge in other task definitions.
-func (g *CompleteGraph) GetComposedPackageTaskVisitor(ctx gocontext.Context, visitor func(ctx gocontext.Context, packageTask *nodes.PackageTask) error) func(taskID string) error {
-	return func(taskID string) error {
-		packageName, taskName := util.GetPackageTaskFromId(taskID)
-
-		pkg, ok := g.WorkspaceInfos[packageName]
-		if !ok {
-			return fmt.Errorf("cannot find package %v for task %v", packageName, taskID)
-		}
-
-		packageTask := &nodes.PackageTask{
-			TaskID:      taskID,
-			Task:        taskName,
-			PackageName: packageName,
-			Pkg:         pkg,
-		}
-
-		mergedTaskDefinition, err := g.getMergedTaskDefinition(pkg, taskID, taskName)
-		if err != nil {
-			return err
-		}
-		packageTask.TaskDefinition = mergedTaskDefinition
-
-		return visitor(ctx, packageTask)
-	}
-}
-
 // GetPackageTaskVisitor wraps a `visitor` function that is used for walking the TaskGraph
 // during execution (or dry-runs). The function returned here does not execute any tasks itself,
 // but it helps curry some data from the Complete Graph and pass it into the visitor function.
@@ -80,12 +53,19 @@ func (g *CompleteGraph) GetPackageTaskVisitor(ctx gocontext.Context, visitor fun
 			Pkg:         pkg,
 		}
 
-		taskDefinition, err := getTaskFromPipeline(g.Pipeline, taskID, taskName)
-		if err != nil {
-			return err
+		if features.FeatureComposableTurboJSON {
+			mergedTaskDefinition, err := g.getMergedTaskDefinition(pkg, taskID, taskName)
+			if err != nil {
+				return err
+			}
+			packageTask.TaskDefinition = mergedTaskDefinition
+		} else {
+			taskDefinition, err := getTaskFromPipeline(g.Pipeline, taskID, taskName)
+			if err != nil {
+				return err
+			}
+			packageTask.TaskDefinition = taskDefinition
 		}
-
-		packageTask.TaskDefinition = taskDefinition
 
 		return visitor(ctx, packageTask)
 	}

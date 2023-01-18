@@ -18,7 +18,6 @@ import (
 	"github.com/vercel/turbo/cli/internal/cmdutil"
 	"github.com/vercel/turbo/cli/internal/colorcache"
 	"github.com/vercel/turbo/cli/internal/core"
-	"github.com/vercel/turbo/cli/internal/features"
 	"github.com/vercel/turbo/cli/internal/graph"
 	"github.com/vercel/turbo/cli/internal/logstreamer"
 	"github.com/vercel/turbo/cli/internal/nodes"
@@ -96,10 +95,6 @@ func RealRun(
 	}
 
 	visitorFn := g.GetPackageTaskVisitor(ctx, execFunc)
-	if features.FeatureComposableTurboJSON {
-		visitorFn = g.GetComposedPackageTaskVisitor(ctx, execFunc)
-	}
-
 	errs := engine.Execute(visitorFn, execOpts)
 
 	// Track if we saw any child with a non-zero exit code
