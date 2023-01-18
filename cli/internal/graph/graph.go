@@ -42,6 +42,13 @@ func (g *CompleteGraph) GetComposedPackageTaskVisitor(ctx gocontext.Context, vis
 			return fmt.Errorf("cannot find package %v for task %v", packageName, taskID)
 		}
 
+		packageTask := &nodes.PackageTask{
+			TaskID:      taskID,
+			Task:        taskName,
+			PackageName: packageName,
+			Pkg:         pkg,
+		}
+
 		// Start a list of TaskDefinitions we've found for this TaskID
 		taskDefinitions := []fs.TaskDefinition{}
 
@@ -143,13 +150,7 @@ func (g *CompleteGraph) GetComposedPackageTaskVisitor(ctx gocontext.Context, vis
 			mergedTaskDefinition.Persistent = taskDef.Persistent
 		}
 
-		packageTask := &nodes.PackageTask{
-			TaskID:         taskID,
-			Task:           taskName,
-			PackageName:    packageName,
-			Pkg:            pkg,
-			TaskDefinition: mergedTaskDefinition,
-		}
+		packageTask.TaskDefinition = mergedTaskDefinition
 
 		return visitor(ctx, packageTask)
 	}
