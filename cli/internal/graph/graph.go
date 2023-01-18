@@ -172,9 +172,8 @@ func (g *CompleteGraph) getTaskDefinitionChain(pkg *fs.PackageJSON, taskID strin
 				// If there's an extends property, walk up to the next one
 				// Find the workspace it refers to, and and assign `directory` to it for the
 				// next iteration in this for loop.
-				// Note(mehulkar): We are looking through Extends right now because of the way the
-				// way this for loop is structured -- and we eventually _want_ to do this --
-				// but right now this loop should only happen once, and it should only contain the root workspace name.
+				// Note(mehulkar): We are looping through all items in Extends, but as of now,
+				// and based on the checks above, we only want to read the first item (and we already know what it is)
 				for _, workspaceName := range turboJSON.Extends {
 					// TODO(mehulkar): Allow enabling from non-root workspaces
 					if workspaceName != util.RootPkgName {
