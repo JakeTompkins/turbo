@@ -127,7 +127,7 @@ func (g *CompleteGraph) getTaskDefinitionChain(pkg *fs.PackageJSON, taskID strin
 	// Start in the workspace directory
 	directory := turbopath.AbsoluteSystemPath(pkg.Dir)
 	turboJSONPath := directory.UntypedJoin("turbo.json")
-	_, err := fs.ReadTurboConfigFromPath(turboJSONPath)
+	_, err := fs.ReadTurboConfig(turboJSONPath)
 
 	// If there is no turbo.json in the workspace directory, we'll use the one in root
 	// and carry on
@@ -139,7 +139,7 @@ func (g *CompleteGraph) getTaskDefinitionChain(pkg *fs.PackageJSON, taskID strin
 		// We will reassign `turboJSONPath` inside this loop, so that
 		// every time we iterate, we're starting from a new one.
 		for {
-			turboJSON, err := fs.ReadTurboConfigFromPath(turboJSONPath)
+			turboJSON, err := fs.ReadTurboConfig(turboJSONPath)
 			if err != nil {
 				return nil, err
 			}
