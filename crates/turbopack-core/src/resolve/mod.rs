@@ -50,6 +50,7 @@ pub mod options;
 pub mod origin;
 pub mod parse;
 pub mod pattern;
+pub mod plugin;
 
 pub use alias_map::{
     AliasMap, AliasMapIntoIter, AliasMapLookupIterator, AliasMatch, AliasPattern, AliasTemplate,
@@ -1009,6 +1010,7 @@ async fn resolved(
     ResolveOptions {
         resolved_map,
         in_package,
+        plugins,
         ..
     }: &ResolveOptions,
     options: ResolveOptionsVc,
@@ -1045,6 +1047,15 @@ async fn resolved(
             }
         }
     }
+
+    for plugin in plugins {
+        if *plugin.condition().matches(*path).await? {
+            if let Some(result) = *plugin.after_resolve(*path, original_request).await? {
+                return Ok(result);
+            }
+        }
+    }
+
     if let Some(resolved_map) = resolved_map {
         let result = resolved_map.lookup(*path, original_request).await?;
         if !matches!(&*result, ImportMapResult::NoEntry) {
@@ -1058,6 +1069,7 @@ async fn resolved(
             .await;
         }
     }
+
     Ok(ResolveResult::Single(
         SourceAssetVc::new(*path).into(),
         symlinks
