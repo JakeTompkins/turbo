@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/pyr-sh/dag"
-	"github.com/vercel/turbo/cli/internal/features"
 	"github.com/vercel/turbo/cli/internal/fs"
 	"github.com/vercel/turbo/cli/internal/nodes"
 	"github.com/vercel/turbo/cli/internal/turbopath"
@@ -53,19 +52,11 @@ func (g *CompleteGraph) GetPackageTaskVisitor(ctx gocontext.Context, visitor fun
 			Pkg:         pkg,
 		}
 
-		if features.FeatureComposableTurboJSON {
-			mergedTaskDefinition, err := g.getMergedTaskDefinition(pkg, taskID, taskName)
-			if err != nil {
-				return err
-			}
-			packageTask.TaskDefinition = mergedTaskDefinition
-		} else {
-			taskDefinition, err := getTaskFromPipeline(g.Pipeline, taskID, taskName)
-			if err != nil {
-				return err
-			}
-			packageTask.TaskDefinition = taskDefinition
+		mergedTaskDefinition, err := g.getMergedTaskDefinition(pkg, taskID, taskName)
+		if err != nil {
+			return err
 		}
+		packageTask.TaskDefinition = mergedTaskDefinition
 
 		return visitor(ctx, packageTask)
 	}
